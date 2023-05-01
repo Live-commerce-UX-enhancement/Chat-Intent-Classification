@@ -23,8 +23,7 @@ classifier2 = pipeline(
 
 
 @app.post("/")
-async def root(item: Item):
-    print(item.chat)
+async def chat_classifier(item: Item):
     labels = classifier1(item.chat)
     general_score = labels[0][0]['score']
     others_score = labels[0][1]['score']
@@ -38,4 +37,3 @@ async def root(item: Item):
             return {"message": "질문"}
         else:
             return {"message": "요청"}
-
