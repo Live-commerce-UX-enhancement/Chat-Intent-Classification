@@ -1,39 +1,18 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from transformers import pipeline
+from fastapi import FastAPI, WebSocket
+from starlette.websockets import WebSocketDisconnect
+import json
+import classifier
 
 app = FastAPI()
 
-class Item(BaseModel):
-    chat: str
-
-# koElectra-base-v3
-classifier1 = pipeline(
-    "text-classification",
-    model="classifier1",
-    return_all_scores=True,
-)
-
-# kcbert-Base
-classifier2 = pipeline(
-    "text-classification",
-    model="classifier2",
-    return_all_scores=True,
-)
-
-
-@app.post("/")
-async def chat_classifier(item: Item):
-    labels = classifier1(item.chat)
-    general_score = labels[0][0]['score']
-    others_score = labels[0][1]['score']
-    if general_score > others_score:
-        return {"message": "일반"}
-    else:
-        labels = classifier2(item.chat)
-        question_score = labels[0][0]['score']
-        request_score = labels[0][1]['score']
-        if question_score > request_score:
-            return {"message": "질문"}
-        else:
-            return {"message": "요청"}
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            preprocessed_data = classifier.preprocess(data)
+            result_list = classifier.classifier(preprocessed_data)
+            await websocket.send_text(json.dumps(result_list, ensure_ascii=False))
+    except WebSocketDisconnect:
+        await websocket.close()
