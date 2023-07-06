@@ -17,15 +17,13 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
 
-            preprocessed_data, request_time = classifier.preprocess(data)
+            preprocessed_data = classifier.preprocess(data)
 
-            result_list = pool.map(classifier.classifier, preprocessed_data)
-            print(result_list)
+            result_list = pool.map(classifier.classify, preprocessed_data)
 
-            # 결과 합치기
+            # 의도 분류 결과
             response_data = {
-                'chat_data': result_list,
-                'request_time': request_time,
+                'chat_data': result_list
             }
 
             await websocket.send_text(json.dumps(response_data, ensure_ascii=False))

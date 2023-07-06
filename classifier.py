@@ -1,6 +1,6 @@
 import json
-import datetime
 from transformers import pipeline
+import csv
 
 # koElectra-base-v3
 classifier1 = pipeline(
@@ -17,21 +17,24 @@ classifier2 = pipeline(
 )
 
 
-def classifier(chat):
+def classify(chat):
     message = chat[1]
     labels = classifier1(message)
     general_score = labels[0][0]['score']
     others_score = labels[0][1]['score']
     if general_score > others_score:
-        return [chat, "일반"]
+        chat.append('일반')
+        return chat
     else:
         labels = classifier2(message)
         question_score = labels[0][0]['score']
         request_score = labels[0][1]['score']
         if question_score > request_score:
-            return [chat, "질문"]
+            chat.append('질문')
+            return chat
         else:
-            return [chat, "요청"]
+            chat.append('요청')
+            return chat
 
 
 def preprocess(data_list):
@@ -39,4 +42,4 @@ def preprocess(data_list):
     data_json = json.loads(data_list)
     for chat_data in data_json['list']:
         message_list.append([chat_data["commentNo"], chat_data["message"]])
-    return message_list, data_json['time']
+    return message_list
