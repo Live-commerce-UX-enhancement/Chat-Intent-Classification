@@ -17,27 +17,40 @@ classifier2 = pipeline(
 
 
 def classify(chat):
-    message = chat['message']
+    message = chat[1]
     labels = classifier1(message)
     general_score = labels[0][0]['score']
     others_score = labels[0][1]['score']
     if general_score > others_score:
-        chat['result'] = '일반'
+        chat.append('일반')
+        return chat
     else:
         labels = classifier2(message)
         question_score = labels[0][0]['score']
         request_score = labels[0][1]['score']
         if question_score > request_score:
-            chat['result'] = '질문'
+            chat.append('질문')
+            return chat
         else:
-            chat['result'] = '요청'
+            chat.append('요청')
+            return chat
 
-    return chat
+import pandas as pd
 
+df = pd.read_csv("1022221.csv")
+
+result = list()
+for row in df.itertuples():
+    classify_result = classify([row.commentNo, row.message])
+    if classify_result[2] == '질문':
+        result.append(classify_result)
+
+result_df = pd.DataFrame(result)
+result_df.to_csv("question_chat.csv")
 
 def preprocess(data_list):
     message_list = list()
     data_json = json.loads(data_list)
     for chat_data in data_json['list']:
-        message_list.append({'commentNo': chat_data["commentNo"], 'message': chat_data["message"]})
+        message_list.append([chat_data["commentNo"], chat_data["message"]])
     return message_list
