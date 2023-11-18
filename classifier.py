@@ -4,14 +4,14 @@ from transformers import pipeline
 # koElectra-base-v3
 classifier1 = pipeline(
     "text-classification",
-    model="/Users/yuseogi/Desktop/work/학교/4-1/캡스톤/Auto-Chat-Classification-and-Answers-for-Live-Commerce/classifier1",
+    model="model Path",
     return_all_scores=True,
 )
 
 # kcbert-Base
 classifier2 = pipeline(
     "text-classification",
-    model="/Users/yuseogi/Desktop/work/학교/4-1/캡스톤/Auto-Chat-Classification-and-Answers-for-Live-Commerce/classifier2",
+    model="model Path",
     return_all_scores=True,
 )
 
